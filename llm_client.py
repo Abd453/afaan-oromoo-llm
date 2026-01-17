@@ -56,7 +56,7 @@ def query_llm(user_input, history_input=[]):
         # --- ERROR HANDLING ---
         if "404" in error_msg:
             return (
-                "Rakkoo: Model 'gemini-1.5-flash' hin argamne. "
+                "Rakkoo: Model 'gemini-2.5-flash' hin argamne. "
                 "Furmaata: Terminal keessatti 'pip install --upgrade google-generativeai' jedhaa."
             )
         elif "400" in error_msg:

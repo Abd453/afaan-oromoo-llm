@@ -2,462 +2,374 @@
 <html lang="om">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Afaan Oromoo AI Studio</title>
-    
-    <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 2. Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- 3. Marked.js (Markdown) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- 4. KaTeX (LaTeX) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
 
     <style>
-        /* Google AI Studio Look & Feel */
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #e5e7eb; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
         
-        /* Typing Animation */
         .typing-dot { animation: bounce 1.4s infinite ease-in-out both; }
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-        
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Markdown Styling (AI Studio Style) */
+        /* Markdown Styles */
         .prose p { margin-bottom: 0.8rem; line-height: 1.6; }
-        .prose h1, .prose h2, .prose h3 { font-weight: 600; color: #fff; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
-        .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
-        .prose strong { color: #60a5fa; font-weight: 700; }
-        
-        /* Code Blocks */
-        .prose pre { 
-            background: #1e1e1e; 
-            padding: 1rem; 
-            border-radius: 0.5rem; 
-            overflow-x: auto; 
-            margin: 1rem 0;
-            border: 1px solid #333;
-        }
-        .prose code { 
-            font-family: 'Fira Code', monospace; 
-            font-size: 0.9em;
-            background: rgba(255,255,255,0.1);
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-        }
+        .prose pre { background: #1e1e1e; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; border: 1px solid #333; margin: 10px 0; }
+        .prose code { font-family: 'Fira Code', monospace; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.85em; }
         .prose pre code { background: transparent; padding: 0; }
-
-        /* Sidebar Transition */
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        .sidebar-closed { transform: translateX(-100%); }
-        /* Mobile Overlay */
-        .overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+        .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.25rem; }
     </style>
 </head>
-<body class="bg-[#0b0f19] text-gray-100 flex h-screen overflow-hidden">
+<body class="flex h-screen overflow-hidden text-sm md:text-base">
 
-    <!-- MOBILE OVERLAY (Click to close sidebar) -->
-    <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 overlay z-20 hidden md:hidden"></div>
+    <!-- MOBILE OVERLAY (Black background when menu is open on phone) -->
+    <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity duration-300 backdrop-blur-sm md:hidden"></div>
 
-    <!-- LEFT SIDEBAR -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-72 bg-[#111827] border-r border-gray-800 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0 md:relative">
+    <!-- SIDEBAR -->
+    <!-- Classes explained: 
+         - fixed inset-y-0: Full height, fixed on mobile.
+         - -translate-x-full: Hidden by default on mobile.
+         - md:static: Normal flow on desktop.
+         - md:translate-x-0: Visible by default on desktop.
+         - transition-all: Smooth animation for collapsing.
+    -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-[#111827] border-r border-gray-800 flex flex-col transition-all duration-300 transform -translate-x-full md:translate-x-0 md:static md:w-72 shadow-2xl md:shadow-none">
         
-        <!-- Header -->
-        <div class="p-4 border-b border-gray-800 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg">AO</div>
-                <span class="font-bold text-lg tracking-wide">AI Studio</span>
+        <!-- Sidebar Header -->
+        <div class="p-4 border-b border-gray-800 flex justify-between items-center h-16 shrink-0">
+            <div class="flex items-center gap-2 font-bold text-lg overflow-hidden whitespace-nowrap">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">AO</div>
+                <span class="sidebar-text opacity-100 transition-opacity duration-200">AI Studio</span>
             </div>
-            <!-- Close Button (Mobile Only) -->
+            <!-- Mobile Close Button -->
             <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
         
-        <!-- New Chat -->
-        <div class="p-4">
-            <button onclick="startNewSession()" class="w-full flex items-center gap-3 bg-blue-600 hover:bg-blue-700 transition px-4 py-3 rounded-lg text-sm font-medium shadow-lg hover:shadow-blue-500/20 group">
-                <i class="fas fa-plus group-hover:rotate-90 transition-transform duration-300"></i> 
-                <span>Haaraa Jalqabi</span>
+        <!-- New Chat Button -->
+        <div class="p-4 shrink-0">
+            <button onclick="startNewSession()" class="w-full flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-medium transition shadow-lg overflow-hidden whitespace-nowrap">
+                <i class="fas fa-plus shrink-0"></i> 
+                <span class="sidebar-text opacity-100 transition-opacity duration-200">Haaraa Jalqabi</span>
             </button>
         </div>
 
         <!-- History List -->
-        <div class="flex-1 overflow-y-auto px-3 space-y-1">
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-4 mb-2 px-2">Recent Chats</div>
-            <div id="history-list" class="space-y-1">
-                <!-- Javascript adds items here (One per session) -->
-            </div>
+        <div class="flex-1 overflow-y-auto px-3 space-y-1 scrollbar-hide">
+            <div class="text-xs font-bold text-gray-500 uppercase px-2 mt-2 mb-2 sidebar-text whitespace-nowrap">History</div>
+            <div id="history-list"></div>
         </div>
 
         <!-- User Profile (Bottom) -->
-        <div class="p-4 border-t border-gray-800 relative">
-            
+        <div class="p-4 border-t border-gray-800 relative shrink-0">
             <!-- Popup Menu -->
-            <div id="profile-menu" class="hidden absolute bottom-20 left-4 right-4 bg-[#1f2937] border border-gray-700 rounded-xl shadow-2xl overflow-hidden animate-fade-in z-50">
-                <div class="p-3 border-b border-gray-700 text-sm">
-                    <p class="font-bold text-white">Abdallah</p>
-                    <p class="text-gray-400 text-xs">abdallah@example.com</p>
-                </div>
-                <button class="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2">
-                    <i class="fas fa-cog"></i> Settings
-                </button>
-                <button onclick="logout()" class="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-900/20 flex items-center gap-2 transition-colors">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+            <div id="profile-menu" class="hidden absolute bottom-16 left-4 right-4 bg-[#1f2937] border border-gray-700 rounded-xl shadow-xl overflow-hidden z-50 min-w-[200px]">
+                <button class="w-full text-left px-4 py-3 text-sm hover:bg-gray-700 flex items-center gap-2"><i class="fas fa-cog text-gray-400"></i> Settings</button>
+                <button onclick="location.reload()" class="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-gray-700 flex items-center gap-2"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
-
-            <!-- Profile Button -->
-            <button onclick="toggleProfileMenu()" class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 transition group">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 p-[2px]">
-                    <img src="https://ui-avatars.com/api/?name=Abdallah&background=111827&color=fff" class="rounded-full w-full h-full">
+            
+            <button onclick="document.getElementById('profile-menu').classList.toggle('hidden')" class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 transition overflow-hidden">
+                <img src="https://ui-avatars.com/api/?name=User&background=random" class="w-8 h-8 rounded-full shrink-0">
+                <div class="flex-1 text-left text-sm font-medium sidebar-text whitespace-nowrap overflow-hidden">
+                    <span class="block truncate">Abdallah</span>
+                    <span class="text-xs text-gray-500">Pro Plan</span>
                 </div>
-                <div class="flex-1 text-left min-w-0">
-                    <p class="text-sm font-medium text-white truncate">Abdallah</p>
-                    <p class="text-xs text-gray-500 truncate">Free Plan</p>
-                </div>
-                <i class="fas fa-chevron-up text-xs text-gray-500 group-hover:text-white transition"></i>
+                <i class="fas fa-chevron-up text-xs text-gray-500 sidebar-text"></i>
             </button>
         </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col relative w-full">
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col w-full h-full relative min-w-0 bg-[#0b0f19]">
         
-        <!-- Header -->
-        <header class="bg-[#0b0f19]/90 backdrop-blur-md p-4 border-b border-gray-800 flex items-center justify-between sticky top-0 z-10 md:hidden">
-            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white">
-                <i class="fas fa-bars text-xl"></i>
-            </button>
-            <span class="font-bold text-lg">Afaan Oromoo AI</span>
-            <div class="w-6"></div> <!-- Spacer for center alignment -->
+        <!-- Header (Hamburger + Desktop Collapse) -->
+        <header class="h-16 border-b border-gray-800 bg-[#0b0f19]/90 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-20">
+            <div class="flex items-center gap-4">
+                <!-- Mobile Hamburger -->
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white p-2">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Desktop Collapse Toggle -->
+                <button onclick="toggleDesktopSidebar()" class="hidden md:block text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition">
+                    <i class="fas fa-columns text-lg"></i>
+                </button>
+
+                <span class="font-bold text-lg tracking-wide md:hidden">Afaan AI</span>
+            </div>
+            <div class="flex items-center gap-3">
+                 <span class="hidden md:block text-xs text-gray-500 font-mono bg-gray-900 px-2 py-1 rounded border border-gray-800">Gemini 1.5 Flash</span>
+            </div>
         </header>
 
-        <!-- Chat Area -->
-        <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-10 space-y-8 scroll-smooth">
-            <!-- Initial Welcome -->
-            <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 space-y-4" id="welcome-screen">
-                <div class="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mb-4 shadow-xl">
+        <!-- Chat Container -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth">
+            <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center text-gray-500 space-y-6 animate-fade-in">
+                <div class="w-20 h-20 bg-gray-800 rounded-3xl flex items-center justify-center mb-2 shadow-2xl border border-gray-700">
                     <i class="fas fa-robot text-4xl text-blue-500"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white">Akkam jirtu!</h2>
-                <p>Aniin gargaaraa keessani. Waa'ee System Engineering ykn waan biraa na gaafadhaa.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8 w-full max-w-lg">
-                    <button onclick="quickAsk('System Engineering maali?')" class="p-4 bg-[#1f2937] hover:bg-[#374151] rounded-xl text-sm text-left transition border border-gray-700">
-                        "System Engineering maali?"
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-2">Akkam jirtu!</h2>
+                    <p class="text-gray-400 max-w-md mx-auto">Ani gargaaraa keessani. Afaan Oromoo, Ingiliffaa, fi Herrega nan beeka.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-lg px-4">
+                    <button onclick="quickAsk('System Engineering maali?')" class="text-left bg-[#1f2937] hover:bg-[#374151] p-4 rounded-xl border border-gray-700 transition text-sm">
+                        <span class="block text-white font-medium mb-1">💡 System Engineering?</span>
+                        <span class="text-gray-400 text-xs">Ibsa gabaabaa kenni...</span>
                     </button>
-                    <button onclick="quickAsk('Afaan Oromoo barreessi')" class="p-4 bg-[#1f2937] hover:bg-[#374151] rounded-xl text-sm text-left transition border border-gray-700">
-                        "Xalayaa nuf barreessi..."
+                    <button onclick="quickAsk('Write Python code for a Calculator')" class="text-left bg-[#1f2937] hover:bg-[#374151] p-4 rounded-xl border border-gray-700 transition text-sm">
+                        <span class="block text-white font-medium mb-1">🐍 Python Code</span>
+                        <span class="text-gray-400 text-xs">Calculator salphaa barreessi...</span>
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Input Area -->
-        <div class="p-4 md:p-6 bg-[#0b0f19] border-t border-gray-800">
-            <div class="max-w-3xl mx-auto relative group">
-                <!-- Loading Animation (Absolute position above input) -->
-                <div id="loading-indicator" class="hidden absolute -top-10 left-0 flex items-center gap-2 text-gray-400 text-xs">
-                    <div class="flex space-x-1">
-                        <div class="typing-dot w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        <div class="typing-dot w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        <div class="typing-dot w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                    </div>
-                    <span>Thinking...</span>
-                </div>
+        <div class="p-4 md:p-6 bg-[#0b0f19] border-t border-gray-800 relative z-30">
+            <!-- Loading State -->
+            <div id="loading" class="hidden absolute -top-8 left-6 text-xs text-gray-400 flex gap-1 items-center bg-[#0b0f19] px-2 py-1 rounded-full border border-gray-800">
+                <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
+                <span>Thinking</span><span class="typing-dot">.</span><span class="typing-dot">.</span>
+            </div>
 
-                <textarea id="user-input" rows="1"
-                    class="w-full bg-[#1f2937] text-white border border-gray-700 rounded-2xl pl-5 pr-14 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder-gray-500 shadow-2xl resize-none overflow-hidden"
-                    placeholder="Gaaffii keessan asitti barreessaa..."
-                    oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
-                    onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }"></textarea>
+            <div class="max-w-4xl mx-auto relative w-full">
+                <input id="user-input" type="text" placeholder="Gaaffii keessan asitti barreessaa..." 
+                    class="w-full bg-[#1f2937] text-white border border-gray-700 rounded-2xl pl-5 pr-14 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-2xl transition-all text-sm md:text-base"
+                    onkeydown="if(event.key === 'Enter') sendMessage()">
                 
-                <button onclick="sendMessage()" 
-                    class="absolute right-2 bottom-2.5 bg-blue-600 hover:bg-blue-500 text-white w-10 h-10 rounded-xl transition-all shadow-lg flex items-center justify-center">
-                    <i class="fas fa-arrow-up"></i>
+                <button onclick="sendMessage()" class="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 text-white w-10 md:w-12 rounded-xl flex items-center justify-center transition shadow-lg active:scale-95">
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
-            <p class="text-center text-gray-600 text-[10px] mt-3 uppercase tracking-widest">Powered by Gemini Flash</p>
+            <p class="text-center text-gray-600 text-[10px] mt-3 md:mt-4">Powered by Google Gemini | Afaan Oromoo Prototype</p>
         </div>
     </main>
 
     <script>
         let chatHistory = []; // API Context
-        let currentSessionId = null; // To track if we are in a new chat or continuing one
+        let currentSessionId = null; 
 
-        // --- 1. CORE MESSAGING ---
-
+        // --- 1. CORE LOGIC ---
+        
         async function sendMessage() {
-            const inputField = document.getElementById('user-input');
-            const message = inputField.value.trim();
-            if (!message) return;
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if (!text) return;
 
-            // Remove welcome screen if it exists
+            // Remove Welcome
             const welcome = document.getElementById('welcome-screen');
-            if(welcome) welcome.remove();
+            if (welcome) welcome.classList.add('hidden');
 
-            inputField.value = '';
-            inputField.style.height = 'auto'; // Reset height
-
-            // Logic: Is this a new session?
+            input.value = '';
+            
+            // Session Logic (Sidebar)
             if (!currentSessionId) {
                 currentSessionId = Date.now();
-                addToSidebar(message, currentSessionId);
+                addToSidebar(text, currentSessionId);
             }
 
-            // Generate ID for edit logic
             const turnId = Date.now();
-
-            // Render User Message
-            appendMessage('user', message, turnId);
-
-            // Show Loading
-            document.getElementById('loading-indicator').classList.remove('hidden');
+            appendMessage('user', text, turnId);
+            
+            const loading = document.getElementById('loading');
+            loading.classList.remove('hidden');
 
             try {
-                // Prepare API Payload
+                // API Call
                 const apiHistory = chatHistory.map(h => ({ role: h.role, parts: h.parts }));
-
-                const response = await fetch('/chat', {
+                const res = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        user_input: message, 
-                        history: apiHistory
-                    })
+                    body: JSON.stringify({ user_input: text, history: apiHistory })
                 });
-
-                const data = await response.json();
-                document.getElementById('loading-indicator').classList.add('hidden');
+                const data = await res.json();
                 
-                if(data.status === "success") {
-                    appendMessage('bot', data.response, turnId + 1);
-                    
-                    // Update Context
-                    chatHistory.push({ role: "user", parts: [message], id: turnId });
-                    chatHistory.push({ role: "model", parts: [data.response], id: turnId + 1 });
-                } else {
-                    appendMessage('bot', "Error: " + data.response);
-                }
+                loading.classList.add('hidden');
+                appendMessage('bot', data.response, turnId + 1);
 
-            } catch (error) {
-                document.getElementById('loading-indicator').classList.add('hidden');
-                appendMessage('bot', "⚠️ Error: Backend not connected.");
+                chatHistory.push({ role: "user", parts: [text], id: turnId });
+                chatHistory.push({ role: "model", parts: [data.response], id: turnId + 1 });
+
+            } catch (e) {
+                loading.classList.add('hidden');
+                appendMessage('bot', "⚠️ Error: Backend not connected. Run `python app.py`", 0);
             }
         }
-
-        // --- 2. RENDERING MESSAGES (AI Studio Style) ---
 
         function appendMessage(role, text, id) {
             const container = document.getElementById('chat-container');
             const isUser = role === 'user';
-            
-            // Parse Markdown
             const rawHtml = marked.parse(text);
             
-            const wrapper = document.createElement('div');
-            wrapper.className = `flex gap-4 fade-in group w-full max-w-3xl mx-auto ${isUser ? 'justify-end' : ''}`;
-            wrapper.dataset.id = id;
-
-            wrapper.innerHTML = `
+            const div = document.createElement('div');
+            div.className = `flex gap-3 md:gap-4 group max-w-4xl mx-auto ${isUser ? 'justify-end' : ''} animate-fade-in`;
+            div.dataset.id = id;
+            
+            // Avatar + Message + Actions
+            div.innerHTML = `
                 ${!isUser ? `
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center shrink-0 shadow-md mt-1">
-                    <i class="fas fa-sparkles text-white text-xs"></i>
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-lg mt-1">
+                    <i class="fas fa-robot text-white text-xs"></i>
                 </div>` : ''}
                 
-                <div class="relative max-w-[90%] md:max-w-[85%] min-w-[50%]">
+                <div class="relative max-w-[85%] md:max-w-[80%] min-w-[100px]">
+                    <!-- Hover Actions -->
+                    ${isUser ? `<button onclick="editMessage(${id})" class="absolute -left-8 top-2 text-gray-500 opacity-0 group-hover:opacity-100 hover:text-white transition p-1 hidden md:block"><i class="fas fa-pencil-alt text-xs"></i></button>` : ''}
+                    ${!isUser ? `<button onclick="copyText(this, '${id}')" class="absolute -right-8 top-2 text-gray-500 opacity-0 group-hover:opacity-100 hover:text-white transition p-1 hidden md:block"><i class="far fa-copy text-xs"></i></button>` : ''}
                     
-                    <!-- USER: Edit Button -->
-                    ${isUser ? `
-                    <button onclick="editMessage(${id})" class="absolute -left-8 top-3 text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition">
-                        <i class="fas fa-pencil-alt text-sm"></i>
-                    </button>` : ''}
-
-                    <!-- BOT: Copy Button -->
-                    ${!isUser ? `
-                    <button onclick="copyToClipboard(this, '${id}')" class="absolute -right-8 top-3 text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition" title="Copy">
-                        <i class="far fa-copy"></i>
-                    </button>` : ''}
-
-                    <div id="msg-${id}" class="${isUser ? 'bg-[#2b2d31] text-gray-100' : 'text-gray-200'} 
-                                px-5 py-3 rounded-2xl shadow-sm leading-relaxed prose prose-invert max-w-none break-words
-                                ${isUser ? 'rounded-tr-sm' : ''}">
+                    <div id="msg-${id}" class="px-4 py-3 md:px-5 md:py-4 rounded-2xl shadow-sm leading-relaxed prose prose-invert text-sm md:text-base 
+                        ${isUser ? 'bg-[#2b2d31] text-gray-100 rounded-tr-sm' : 'text-gray-200'}">
                         ${rawHtml}
                     </div>
-                    
-                    <!-- Hidden raw text for copying -->
                     <textarea id="raw-${id}" class="hidden">${text}</textarea>
                 </div>
 
                 ${isUser ? `
-                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center shrink-0 mt-1">
+                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center shrink-0 mt-1">
                     <i class="fas fa-user text-white text-xs"></i>
                 </div>` : ''}
             `;
+            container.appendChild(div);
             
-            container.appendChild(wrapper);
-            
-            // LaTeX Rendering
-            renderMathInElement(wrapper, {
-                delimiters: [
-                    {left: '$$', right: '$$', display: true},
-                    {left: '$', right: '$', display: false},
-                    {left: '\\(', right: '\\)', display: false},
-                    {left: '\\[', right: '\\]', display: true}
-                ],
-                throwOnError: false
-            });
-
-            // Scroll Logic
+            // LaTeX Render
+            renderMathInElement(div, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
             container.scrollTop = container.scrollHeight;
         }
 
-        // --- 3. SIDEBAR LOGIC (One Entry Per Session) ---
+        // --- 2. SIDEBAR & UI LOGIC ---
 
-        function addToSidebar(text, sessionId) {
-            const list = document.getElementById('history-list');
-            const item = document.createElement('div');
-            item.id = `session-${sessionId}`;
-            // Truncate title
-            const title = text.length > 25 ? text.substring(0, 25) + '...' : text;
+        // Toggle Sidebar (Mobile & Desktop Collapse)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
             
-            item.className = "group relative flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 cursor-pointer text-sm text-gray-300 transition fade-in";
-            
-            item.innerHTML = `
-                <i class="far fa-message text-gray-500"></i>
-                <span class="truncate flex-1">${title}</span>
-                <!-- Delete Button (Hover) -->
-                <button onclick="deleteSession('${sessionId}', event)" class="absolute right-2 text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
-                    <i class="fas fa-trash"></i>
-                </button>
-            `;
-            list.prepend(item);
+            // Mobile Logic
+            if(window.innerWidth < 768) {
+                if(sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full'); // Open
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full'); // Close
+                    overlay.classList.add('hidden');
+                }
+            }
         }
 
-        function deleteSession(sessionId, event) {
-            event.stopPropagation();
-            document.getElementById(`session-${sessionId}`).remove();
-            if(sessionId == currentSessionId) startNewSession();
+        // Desktop Specific Collapse
+        function toggleDesktopSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const texts = document.querySelectorAll('.sidebar-text');
+            
+            if(sidebar.classList.contains('md:w-72')) {
+                // Collapse
+                sidebar.classList.remove('md:w-72');
+                sidebar.classList.add('md:w-[0px]'); // Shrink to 0 width
+                sidebar.classList.add('md:overflow-hidden'); // Hide content
+                sidebar.style.padding = '0'; // Remove padding
+            } else {
+                // Expand
+                sidebar.classList.add('md:w-72');
+                sidebar.classList.remove('md:w-[0px]');
+                sidebar.classList.remove('md:overflow-hidden');
+                sidebar.style.padding = ''; // Reset padding
+            }
+        }
+
+        // --- 3. UTILITIES ---
+
+        function quickAsk(text) {
+            document.getElementById('user-input').value = text;
+            sendMessage();
+        }
+
+        function addToSidebar(text, id) {
+            const list = document.getElementById('history-list');
+            const div = document.createElement('div');
+            div.id = `sess-${id}`;
+            const title = text.length > 22 ? text.substring(0, 22) + '...' : text;
+            
+            div.className = "group flex items-center justify-between p-3 rounded-lg hover:bg-gray-800 cursor-pointer text-sm text-gray-400 transition mb-1 sidebar-text whitespace-nowrap overflow-hidden";
+            div.innerHTML = `
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <i class="far fa-message text-xs"></i>
+                    <span class="truncate">${title}</span>
+                </div>
+                <button onclick="deleteSession('${id}', event)" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 px-2"><i class="fas fa-trash"></i></button>
+            `;
+            list.prepend(div);
+        }
+
+        function deleteSession(id, e) {
+            e.stopPropagation();
+            document.getElementById(`sess-${id}`).remove();
+            if(id == currentSessionId) startNewSession();
         }
 
         function startNewSession() {
             currentSessionId = null;
             chatHistory = [];
-            document.getElementById('chat-container').innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 space-y-4" id="welcome-screen">
-                <div class="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mb-4 shadow-xl">
-                    <i class="fas fa-robot text-4xl text-blue-500"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white">Akkam jirtu!</h2>
-                <p>Aniin gargaaraa keessani. Waa'ee System Engineering ykn waan biraa na gaafadhaa.</p>
-            </div>`;
-            // Close sidebar on mobile if open
+            const container = document.getElementById('chat-container');
+            container.innerHTML = ''; // Clear chat
+            document.getElementById('welcome-screen').classList.remove('hidden');
+            container.appendChild(document.getElementById('welcome-screen'));
+            
+            // Close mobile sidebar if open
             if(window.innerWidth < 768) toggleSidebar();
         }
 
-        // --- 4. UTILITIES (Copy, Edit, Profile) ---
-
-        function copyToClipboard(btn, id) {
-            const rawText = document.getElementById(`raw-${id}`).value;
-            navigator.clipboard.writeText(rawText).then(() => {
-                const icon = btn.querySelector('i');
-                icon.className = "fas fa-check text-green-400";
-                setTimeout(() => icon.className = "far fa-copy", 2000);
-            });
+        function copyText(btn, id) {
+            const text = document.getElementById(`raw-${id}`).value;
+            navigator.clipboard.writeText(text);
+            const icon = btn.querySelector('i');
+            icon.className = "fas fa-check text-green-400";
+            setTimeout(() => icon.className = "far fa-copy", 2000);
         }
 
         function editMessage(id) {
             const msgDiv = document.getElementById(`msg-${id}`);
-            const rawText = document.getElementById(`raw-${id}`).value;
-            
-            // Find index in history to slice later
+            const text = document.getElementById(`raw-${id}`).value;
             const index = chatHistory.findIndex(m => m.id === id);
-            
-            msgDiv.innerHTML = `
-                <div class="flex flex-col gap-2 w-full">
-                    <textarea id="edit-area-${id}" class="w-full bg-[#111827] text-white border border-blue-500 rounded p-3 outline-none resize-none" rows="2">${rawText}</textarea>
-                    <div class="flex justify-end gap-2">
-                         <button onclick="cancelEdit(${id}, '${rawText.replace(/'/g, "\\'")}')" class="px-3 py-1 bg-gray-700 rounded text-xs hover:bg-gray-600">Cancel</button>
-                         <button onclick="confirmEdit(${id}, ${index})" class="px-3 py-1 bg-blue-600 rounded text-xs hover:bg-blue-500">Save & Run</button>
-                    </div>
-                </div>
-            `;
-        }
 
-        function cancelEdit(id, originalText) {
-             const msgDiv = document.getElementById(`msg-${id}`);
-             msgDiv.innerHTML = marked.parse(originalText);
+            msgDiv.innerHTML = `
+                <div class="flex flex-col gap-2 min-w-[250px] w-full">
+                    <textarea id="edit-${id}" class="w-full bg-[#111827] text-white border border-blue-500 rounded p-2 outline-none text-sm">${text}</textarea>
+                    <div class="flex gap-2 justify-end">
+                        <button onclick="cancelEdit(${id})" class="px-2 py-1 bg-gray-700 rounded text-xs">Cancel</button>
+                        <button onclick="confirmEdit(${id}, ${index})" class="px-2 py-1 bg-blue-600 rounded text-xs">Save & Run</button>
+                    </div>
+                </div>`;
+        }
+        
+        function cancelEdit(id) {
+            const text = document.getElementById(`raw-${id}`).value;
+            const msgDiv = document.getElementById(`msg-${id}`);
+            msgDiv.innerHTML = marked.parse(text);
         }
 
         function confirmEdit(id, index) {
-            const newText = document.getElementById(`edit-area-${id}`).value;
+            const newText = document.getElementById(`edit-${id}`).value;
             if(!newText) return;
 
-            // 1. Clear future history
-            if(index !== -1) {
-                chatHistory = chatHistory.slice(0, index);
-            }
-
-            // 2. Remove messages from UI from this point on
-            // (Simple hack: clear all and reprint history? Or just start new from here. 
-            // For prototype, let's just force a reload logic or cleaner slice)
-            // Ideally: Remove DOM elements after this ID.
+            chatHistory = chatHistory.slice(0, index);
             
-            // RE-SEND logic
-            document.getElementById('user-input').value = newText;
-            
-            // Remove the old edited message and everything after it from UI
+            // Remove DOM elements after this ID
             let el = document.querySelector(`[data-id='${id}']`);
-            while (el) {
-                let next = el.nextSibling;
-                el.remove();
-                el = next;
-            }
-            
-            sendMessage();
-        }
+            while (el) { let n = el.nextSibling; el.remove(); el = n; }
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobile-overlay');
-            
-            if (sidebar.classList.contains('-translate-x-full')) {
-                // Open
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                // Close
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
-        }
-
-        function toggleProfileMenu() {
-            document.getElementById('profile-menu').classList.toggle('hidden');
-        }
-
-        function logout() {
-            alert("Logging out...");
-            location.reload();
-        }
-
-        function quickAsk(text) {
-            document.getElementById('user-input').value = text;
+            document.getElementById('user-input').value = newText;
             sendMessage();
         }
     </script>

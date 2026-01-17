@@ -2,74 +2,375 @@
 <html lang="om">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Afaan Oromoo AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Afaan Oromoo AI Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
     <style>
-        .chat-box { height: 70vh; overflow-y: auto; }
-        .user-msg { background: #dcf8c6; align-self: flex-end; }
-        .bot-msg { background: #f0f0f0; align-self: flex-start; }
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #e5e7eb; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        
+        .typing-dot { animation: bounce 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* Markdown Styles */
+        .prose p { margin-bottom: 0.8rem; line-height: 1.6; }
+        .prose pre { background: #1e1e1e; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; border: 1px solid #333; margin: 10px 0; }
+        .prose code { font-family: 'Fira Code', monospace; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.85em; }
+        .prose pre code { background: transparent; padding: 0; }
+        .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.25rem; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div class="max-w-2xl mx-auto mt-10 bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="bg-blue-600 p-4 text-white text-center font-bold text-xl">
-            Afaan Oromoo AI 
+<body class="flex h-screen overflow-hidden text-sm md:text-base">
+
+    <!-- MOBILE OVERLAY (Black background when menu is open on phone) -->
+    <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity duration-300 backdrop-blur-sm md:hidden"></div>
+
+    <!-- SIDEBAR -->
+    <!-- Classes explained: 
+         - fixed inset-y-0: Full height, fixed on mobile.
+         - -translate-x-full: Hidden by default on mobile.
+         - md:static: Normal flow on desktop.
+         - md:translate-x-0: Visible by default on desktop.
+         - transition-all: Smooth animation for collapsing.
+    -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-[#111827] border-r border-gray-800 flex flex-col transition-all duration-300 transform -translate-x-full md:translate-x-0 md:static md:w-72 shadow-2xl md:shadow-none">
+        
+        <!-- Sidebar Header -->
+        <div class="p-4 border-b border-gray-800 flex justify-between items-center h-16 shrink-0">
+            <div class="flex items-center gap-2 font-bold text-lg overflow-hidden whitespace-nowrap">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">AO</div>
+                <span class="sidebar-text opacity-100 transition-opacity duration-200">AI Studio</span>
+            </div>
+            <!-- Mobile Close Button -->
+            <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
         </div>
         
-        <div id="chat-container" class="chat-box p-4 flex flex-col gap-3">
-            <div class="bot-msg p-3 rounded-lg max-w-[80%]">Akkam ree! Maal isiniif yoon godhu danda'a?</div>
+        <!-- New Chat Button -->
+        <div class="p-4 shrink-0">
+            <button onclick="startNewSession()" class="w-full flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-medium transition shadow-lg overflow-hidden whitespace-nowrap">
+                <i class="fas fa-plus shrink-0"></i> 
+                <span class="sidebar-text opacity-100 transition-opacity duration-200">Haaraa Jalqabi</span>
+            </button>
         </div>
 
-        <div class="p-4 border-t flex gap-2">
-            <input type="text" id="user-input" placeholder="Gaaffii keessan asitti barreessaa..." 
-                   class="flex-1 border p-2 rounded-lg outline-none focus:border-blue-500">
-            <button onclick="sendMessage()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Ergi</button>
+        <!-- History List -->
+        <div class="flex-1 overflow-y-auto px-3 space-y-1 scrollbar-hide">
+            <div class="text-xs font-bold text-gray-500 uppercase px-2 mt-2 mb-2 sidebar-text whitespace-nowrap">History</div>
+            <div id="history-list"></div>
         </div>
-    </div>
+
+        <!-- User Profile (Bottom) -->
+        <div class="p-4 border-t border-gray-800 relative shrink-0">
+            <!-- Popup Menu -->
+            <div id="profile-menu" class="hidden absolute bottom-16 left-4 right-4 bg-[#1f2937] border border-gray-700 rounded-xl shadow-xl overflow-hidden z-50 min-w-[200px]">
+                <button class="w-full text-left px-4 py-3 text-sm hover:bg-gray-700 flex items-center gap-2"><i class="fas fa-cog text-gray-400"></i> Settings</button>
+                <button onclick="location.reload()" class="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-gray-700 flex items-center gap-2"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+            
+            <button onclick="document.getElementById('profile-menu').classList.toggle('hidden')" class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 transition overflow-hidden">
+                <img src="https://ui-avatars.com/api/?name=User&background=random" class="w-8 h-8 rounded-full shrink-0">
+                <div class="flex-1 text-left text-sm font-medium sidebar-text whitespace-nowrap overflow-hidden">
+                    <span class="block truncate">Abdallah</span>
+                    <span class="text-xs text-gray-500">Pro Plan</span>
+                </div>
+                <i class="fas fa-chevron-up text-xs text-gray-500 sidebar-text"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col w-full h-full relative min-w-0 bg-[#0b0f19]">
+        
+        <!-- Header (Hamburger + Desktop Collapse) -->
+        <header class="h-16 border-b border-gray-800 bg-[#0b0f19]/90 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-20">
+            <div class="flex items-center gap-4">
+                <!-- Mobile Hamburger -->
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white p-2">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Desktop Collapse Toggle -->
+                <button onclick="toggleDesktopSidebar()" class="hidden md:block text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition">
+                    <i class="fas fa-columns text-lg"></i>
+                </button>
+
+                <span class="font-bold text-lg tracking-wide md:hidden">Afaan AI</span>
+            </div>
+            <div class="flex items-center gap-3">
+                 <span class="hidden md:block text-xs text-gray-500 font-mono bg-gray-900 px-2 py-1 rounded border border-gray-800">Gemini 2.5 Flash</span>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth">
+            <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center text-gray-500 space-y-6 animate-fade-in">
+                <div class="w-20 h-20 bg-gray-800 rounded-3xl flex items-center justify-center mb-2 shadow-2xl border border-gray-700">
+                    <i class="fas fa-robot text-4xl text-blue-500"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-2">Akkam jirtu!</h2>
+                    <p class="text-gray-400 max-w-md mx-auto">Ani gargaaraa keessani. Afaan Oromoo, Ingiliffaa, fi Herrega nan beeka.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-lg px-4">
+                    <button onclick="quickAsk('System Engineering maali?')" class="text-left bg-[#1f2937] hover:bg-[#374151] p-4 rounded-xl border border-gray-700 transition text-sm">
+                        <span class="block text-white font-medium mb-1">💡 System Engineering?</span>
+                        <span class="text-gray-400 text-xs">Ibsa gabaabaa kenni...</span>
+                    </button>
+                    <button onclick="quickAsk('Write Python code for a Calculator')" class="text-left bg-[#1f2937] hover:bg-[#374151] p-4 rounded-xl border border-gray-700 transition text-sm">
+                        <span class="block text-white font-medium mb-1">🐍 Python Code</span>
+                        <span class="text-gray-400 text-xs">Calculator salphaa barreessi...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 md:p-6 bg-[#0b0f19] border-t border-gray-800 relative z-30">
+            <!-- Loading State -->
+            <div id="loading" class="hidden absolute -top-8 left-6 text-xs text-gray-400 flex gap-1 items-center bg-[#0b0f19] px-2 py-1 rounded-full border border-gray-800">
+                <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
+                <span>Thinking</span><span class="typing-dot">.</span><span class="typing-dot">.</span>
+            </div>
+
+            <div class="max-w-4xl mx-auto relative w-full">
+                <input id="user-input" type="text" placeholder="Gaaffii keessan asitti barreessaa..." 
+                    class="w-full bg-[#1f2937] text-white border border-gray-700 rounded-2xl pl-5 pr-14 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-2xl transition-all text-sm md:text-base"
+                    onkeydown="if(event.key === 'Enter') sendMessage()">
+                
+                <button onclick="sendMessage()" class="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 text-white w-10 md:w-12 rounded-xl flex items-center justify-center transition shadow-lg active:scale-95">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <p class="text-center text-gray-600 text-[10px] mt-3 md:mt-4">Powered by Google Gemini | Afaan Oromoo Prototype</p>
+        </div>
+    </main>
 
     <script>
-        let chatHistory = []; // Stores the conversation context
+        let chatHistory = []; // API Context
+        let currentSessionId = null; 
 
+        // --- 1. CORE LOGIC ---
+        
         async function sendMessage() {
-            const inputField = document.getElementById('user-input');
-            const container = document.getElementById('chat-container');
-            const text = inputField.value.trim();
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
             if (!text) return;
 
-            // 1. Show User Message
-            appendMessage(text, 'user-msg');
-            inputField.value = '';
+            // Remove Welcome
+            const welcome = document.getElementById('welcome-screen');
+            if (welcome) welcome.classList.add('hidden');
+
+            input.value = '';
+            
+            // Session Logic (Sidebar)
+            if (!currentSessionId) {
+                currentSessionId = Date.now();
+                addToSidebar(text, currentSessionId);
+            }
+
+            const turnId = Date.now();
+            appendMessage('user', text, turnId);
+            
+            const loading = document.getElementById('loading');
+            loading.classList.remove('hidden');
 
             try {
-                // 2. Call FastAPI
-                const response = await fetch('http://127.0.0.1:8000/chat', {
+                // API Call
+                const apiHistory = chatHistory.map(h => ({ role: h.role, parts: h.parts }));
+                const res = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_input: text, history: chatHistory })
+                    body: JSON.stringify({ user_input: text, history: apiHistory })
                 });
+                const data = await res.json();
                 
-                const data = await response.json();
-                
-                // 3. Update History & Show Bot Message
-                appendMessage(data.response, 'bot-msg');
-                
-                // Keep Gemini history format
-                chatHistory.push({"role": "user", "parts": [text]});
-                chatHistory.push({"role": "model", "parts": [data.response]});
+                loading.classList.add('hidden');
+                appendMessage('bot', data.response, turnId + 1);
 
-            } catch (error) {
-                appendMessage("Dogoggora: VPN keessan check godhaa.", 'bot-msg text-red-500');
+                chatHistory.push({ role: "user", parts: [text], id: turnId });
+                chatHistory.push({ role: "model", parts: [data.response], id: turnId + 1 });
+
+            } catch (e) {
+                loading.classList.add('hidden');
+                appendMessage('bot', "⚠️ Error: Backend not connected. Run `python app.py`", 0);
             }
         }
 
-        function appendMessage(text, className) {
+        function appendMessage(role, text, id) {
             const container = document.getElementById('chat-container');
+            const isUser = role === 'user';
+            const rawHtml = marked.parse(text);
+            
             const div = document.createElement('div');
-            div.className = `${className} p-3 rounded-lg max-w-[80%]`;
-            div.innerText = text;
+            div.className = `flex gap-3 md:gap-4 group max-w-4xl mx-auto ${isUser ? 'justify-end' : ''} animate-fade-in`;
+            div.dataset.id = id;
+            
+            // Avatar + Message + Actions
+            div.innerHTML = `
+                ${!isUser ? `
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-lg mt-1">
+                    <i class="fas fa-robot text-white text-xs"></i>
+                </div>` : ''}
+                
+                <div class="relative max-w-[85%] md:max-w-[80%] min-w-[100px]">
+                    <!-- Hover Actions -->
+                    ${isUser ? `<button onclick="editMessage(${id})" class="absolute -left-8 top-2 text-gray-500 opacity-0 group-hover:opacity-100 hover:text-white transition p-1 hidden md:block"><i class="fas fa-pencil-alt text-xs"></i></button>` : ''}
+                    ${!isUser ? `<button onclick="copyText(this, '${id}')" class="absolute -right-8 top-2 text-gray-500 opacity-0 group-hover:opacity-100 hover:text-white transition p-1 hidden md:block"><i class="far fa-copy text-xs"></i></button>` : ''}
+                    
+                    <div id="msg-${id}" class="px-4 py-3 md:px-5 md:py-4 rounded-2xl shadow-sm leading-relaxed prose prose-invert text-sm md:text-base 
+                        ${isUser ? 'bg-[#2b2d31] text-gray-100 rounded-tr-sm' : 'text-gray-200'}">
+                        ${rawHtml}
+                    </div>
+                    <textarea id="raw-${id}" class="hidden">${text}</textarea>
+                </div>
+
+                ${isUser ? `
+                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center shrink-0 mt-1">
+                    <i class="fas fa-user text-white text-xs"></i>
+                </div>` : ''}
+            `;
             container.appendChild(div);
+            
+            // LaTeX Render
+            renderMathInElement(div, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
             container.scrollTop = container.scrollHeight;
+        }
+
+        // --- 2. SIDEBAR & UI LOGIC ---
+
+        // Toggle Sidebar (Mobile & Desktop Collapse)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            // Mobile Logic
+            if(window.innerWidth < 768) {
+                if(sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full'); // Open
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full'); // Close
+                    overlay.classList.add('hidden');
+                }
+            }
+        }
+
+        // Desktop Specific Collapse
+        function toggleDesktopSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const texts = document.querySelectorAll('.sidebar-text');
+            
+            if(sidebar.classList.contains('md:w-72')) {
+                // Collapse
+                sidebar.classList.remove('md:w-72');
+                sidebar.classList.add('md:w-[0px]'); // Shrink to 0 width
+                sidebar.classList.add('md:overflow-hidden'); // Hide content
+                sidebar.style.padding = '0'; // Remove padding
+            } else {
+                // Expand
+                sidebar.classList.add('md:w-72');
+                sidebar.classList.remove('md:w-[0px]');
+                sidebar.classList.remove('md:overflow-hidden');
+                sidebar.style.padding = ''; // Reset padding
+            }
+        }
+
+        // --- 3. UTILITIES ---
+
+        function quickAsk(text) {
+            document.getElementById('user-input').value = text;
+            sendMessage();
+        }
+
+        function addToSidebar(text, id) {
+            const list = document.getElementById('history-list');
+            const div = document.createElement('div');
+            div.id = `sess-${id}`;
+            const title = text.length > 22 ? text.substring(0, 22) + '...' : text;
+            
+            div.className = "group flex items-center justify-between p-3 rounded-lg hover:bg-gray-800 cursor-pointer text-sm text-gray-400 transition mb-1 sidebar-text whitespace-nowrap overflow-hidden";
+            div.innerHTML = `
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <i class="far fa-message text-xs"></i>
+                    <span class="truncate">${title}</span>
+                </div>
+                <button onclick="deleteSession('${id}', event)" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 px-2"><i class="fas fa-trash"></i></button>
+            `;
+            list.prepend(div);
+        }
+
+        function deleteSession(id, e) {
+            e.stopPropagation();
+            document.getElementById(`sess-${id}`).remove();
+            if(id == currentSessionId) startNewSession();
+        }
+
+        function startNewSession() {
+            currentSessionId = null;
+            chatHistory = [];
+            const container = document.getElementById('chat-container');
+            container.innerHTML = ''; // Clear chat
+            document.getElementById('welcome-screen').classList.remove('hidden');
+            container.appendChild(document.getElementById('welcome-screen'));
+            
+            // Close mobile sidebar if open
+            if(window.innerWidth < 768) toggleSidebar();
+        }
+
+        function copyText(btn, id) {
+            const text = document.getElementById(`raw-${id}`).value;
+            navigator.clipboard.writeText(text);
+            const icon = btn.querySelector('i');
+            icon.className = "fas fa-check text-green-400";
+            setTimeout(() => icon.className = "far fa-copy", 2000);
+        }
+
+        function editMessage(id) {
+            const msgDiv = document.getElementById(`msg-${id}`);
+            const text = document.getElementById(`raw-${id}`).value;
+            const index = chatHistory.findIndex(m => m.id === id);
+
+            msgDiv.innerHTML = `
+                <div class="flex flex-col gap-2 min-w-[250px] w-full">
+                    <textarea id="edit-${id}" class="w-full bg-[#111827] text-white border border-blue-500 rounded p-2 outline-none text-sm">${text}</textarea>
+                    <div class="flex gap-2 justify-end">
+                        <button onclick="cancelEdit(${id})" class="px-2 py-1 bg-gray-700 rounded text-xs">Cancel</button>
+                        <button onclick="confirmEdit(${id}, ${index})" class="px-2 py-1 bg-blue-600 rounded text-xs">Save & Run</button>
+                    </div>
+                </div>`;
+        }
+        
+        function cancelEdit(id) {
+            const text = document.getElementById(`raw-${id}`).value;
+            const msgDiv = document.getElementById(`msg-${id}`);
+            msgDiv.innerHTML = marked.parse(text);
+        }
+
+        function confirmEdit(id, index) {
+            const newText = document.getElementById(`edit-${id}`).value;
+            if(!newText) return;
+
+            chatHistory = chatHistory.slice(0, index);
+            
+            // Remove DOM elements after this ID
+            let el = document.querySelector(`[data-id='${id}']`);
+            while (el) { let n = el.nextSibling; el.remove(); el = n; }
+
+            document.getElementById('user-input').value = newText;
+            sendMessage();
         }
     </script>
 </body>

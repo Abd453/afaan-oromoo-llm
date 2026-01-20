@@ -1,0 +1,389 @@
+{
+  "summary": {
+    "total_tests": 22,
+    "passed": 5,
+    "failed": 17,
+    "error_count": 0,
+    "pass_rate": 0.22727272727272727,
+    "avg_response_time": 0.2293752756985751,
+    "median_response_time": 0.19674229621887207,
+    "avg_oromo_ratio": 0.15454545454545454,
+    "timestamp": "2026-01-20T13:49:09.743504"
+  },
+  "results": [
+    {
+      "test_id": "greeting_01",
+      "input_text": "Akkam jirta?",
+      "expected_type": "greeting_response",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.6987738609313965,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Low Oromo content: 0.12 < 0.3 | Missing typical greeting response words",
+      "timestamp": "2026-01-20T13:49:05.384160"
+    },
+    {
+      "test_id": "greeting_02",
+      "input_text": "Nagaan jirtu?",
+      "expected_type": "greeting_response",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.2583303451538086,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Low Oromo content: 0.12 < 0.3 | Missing typical greeting response words",
+      "timestamp": "2026-01-20T13:49:05.642811"
+    },
+    {
+      "test_id": "technical_01",
+      "input_text": "System Engineering maali?",
+      "expected_type": "technical_explanation",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.16966032981872559,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:05.813061"
+    },
+    {
+      "test_id": "technical_02",
+      "input_text": "Kompitarri akkamitti hojjeta?",
+      "expected_type": "technical_explanation",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.1699681282043457,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:05.984422"
+    },
+    {
+      "test_id": "technical_03",
+      "input_text": "Write a Python function to calculate factorial",
+      "expected_type": "code_generation",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.18318772315979004,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": true,
+      "notes": "All checks passed",
+      "timestamp": "2026-01-20T13:49:06.168722"
+    },
+    {
+      "test_id": "cultural_01",
+      "input_text": "Irreecha maal jedhama?",
+      "expected_type": "cultural_knowledge",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.22847700119018555,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.3 | No cultural markers found in cultural question",
+      "timestamp": "2026-01-20T13:49:06.397430"
+    },
+    {
+      "test_id": "cultural_02",
+      "input_text": "Sirna Gadaa ibsi",
+      "expected_type": "cultural_knowledge",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.20659589767456055,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.3 | No cultural markers found in cultural question",
+      "timestamp": "2026-01-20T13:49:06.604575"
+    },
+    {
+      "test_id": "cultural_03",
+      "input_text": "Aadaa Oromoo ibsi",
+      "expected_type": "cultural_knowledge",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.23899316787719727,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.3 | No cultural markers found in cultural question",
+      "timestamp": "2026-01-20T13:49:06.844063"
+    },
+    {
+      "test_id": "mixed_01",
+      "input_text": "Can you explain quantum computing in Afaan Oromoo?",
+      "expected_type": "technical_explanation",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.18512439727783203,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:07.029434"
+    },
+    {
+      "test_id": "mixed_02",
+      "input_text": "Maaloo artificial intelligence ibsi",
+      "expected_type": "technical_explanation",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.1921529769897461,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:07.221947"
+    },
+    {
+      "test_id": "conversation_01",
+      "input_text": "Maal hojjechaa jirta?",
+      "expected_type": "conversational_response",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.403566837310791,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:07.625867"
+    },
+    {
+      "test_id": "conversation_02",
+      "input_text": "Na gargaartaa?",
+      "expected_type": "conversational_response",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.18958759307861328,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:07.815675"
+    },
+    {
+      "test_id": "math_01",
+      "input_text": "2 + 2 maal ta'a?",
+      "expected_type": "mathematical_response",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.28424859046936035,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": true,
+      "notes": "All checks passed",
+      "timestamp": "2026-01-20T13:49:08.100460"
+    },
+    {
+      "test_id": "math_02",
+      "input_text": "Himoota Pythagoras ibsi",
+      "expected_type": "mathematical_response",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.18732333183288574,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 80 | Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:08.288122"
+    },
+    {
+      "test_id": "educational_01",
+      "input_text": "Barumsa waa'ee lafti akkamitti uumamte naaf ibsi",
+      "expected_type": "educational_explanation",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.17968344688415527,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 150 | Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:08.468110"
+    },
+    {
+      "test_id": "educational_02",
+      "input_text": "Photosynthesis maal jedhama?",
+      "expected_type": "educational_explanation",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.30556273460388184,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:08.774172"
+    },
+    {
+      "test_id": "edge_empty",
+      "input_text": "",
+      "expected_type": "error_handling",
+      "actual_response": "Maaloo, gaaffii keessan barreessaa.",
+      "metrics": {
+        "language_consistency": 0.5,
+        "response_time": 3.814697265625e-06,
+        "error_occurred": false,
+        "response_length": 35,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": true,
+      "notes": "All checks passed",
+      "timestamp": "2026-01-20T13:49:08.774805"
+    },
+    {
+      "test_id": "edge_whitespace",
+      "input_text": "   ",
+      "expected_type": "error_handling",
+      "actual_response": "Maaloo, gaaffii keessan barreessaa.",
+      "metrics": {
+        "language_consistency": 0.5,
+        "response_time": 3.814697265625e-06,
+        "error_occurred": false,
+        "response_length": 35,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": true,
+      "notes": "All checks passed",
+      "timestamp": "2026-01-20T13:49:08.775245"
+    },
+    {
+      "test_id": "edge_long",
+      "input_text": "Maaloo naaf ibsi waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa",
+      "expected_type": "long_input_handling",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.35742664337158203,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": true,
+      "notes": "All checks passed",
+      "timestamp": "2026-01-20T13:49:09.133575"
+    },
+    {
+      "test_id": "history_01",
+      "input_text": "Seenaa Oromoo gabaabsii naaf himi",
+      "expected_type": "historical_explanation",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.21475648880004883,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 150 | Low Oromo content: 0.12 < 0.3",
+      "timestamp": "2026-01-20T13:49:09.348606"
+    },
+    {
+      "test_id": "practical_01",
+      "input_text": "Akkamittin nyaata gaarii qopheessuu danda'a?",
+      "expected_type": "practical_advice",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.1914973258972168,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Response too short: 66 < 100 | Low Oromo content: 0.12 < 0.2",
+      "timestamp": "2026-01-20T13:49:09.540909"
+    },
+    {
+      "test_id": "translation_01",
+      "input_text": "Jechootaa kana gara Afaan Oromoo hiiki: 'Good morning, how can I help you today?'",
+      "expected_type": "translation_response",
+      "actual_response": "Rakkoo: API Key sirrii miti. Maaloo qindeessaa keessan sakatta'aa.",
+      "metrics": {
+        "language_consistency": 0.12,
+        "response_time": 0.20133161544799805,
+        "error_occurred": false,
+        "response_length": 66,
+        "contains_code": false,
+        "cultural_markers": 0
+      },
+      "passed": false,
+      "notes": "Low Oromo content: 0.12 < 0.4",
+      "timestamp": "2026-01-20T13:49:09.743045"
+    }
+  ]
+}

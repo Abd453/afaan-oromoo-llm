@@ -162,6 +162,114 @@
         let chatHistory = []; // API Context
         let currentSessionId = null; 
 
+        // --- 0. INITIALIZATION & PERSISTENCE ---
+        
+        async function initializeApp() {
+            // Load session from localStorage
+            const savedSessionId = localStorage.getItem('currentSessionId');
+            if (savedSessionId) {
+                await loadSession(savedSessionId);
+            }
+            
+            // Load session list from backend
+            await loadSessionList();
+        }
+        
+        async function loadSessionList() {
+            try {
+                const res = await fetch('/sessions?limit=50');
+                const data = await res.json();
+                
+                const historyList = document.getElementById('history-list');
+                historyList.innerHTML = '';
+                
+                if (data.sessions && data.sessions.length > 0) {
+                    data.sessions.forEach(session => {
+                        addToSidebar(session.title, session.id, false);
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load sessions:', e);
+            }
+        }
+        
+        async function loadSession(sessionId) {
+            try {
+                const res = await fetch(`/sessions/${sessionId}`);
+                if (!res.ok) {
+                    throw new Error('Session not found');
+                }
+                
+                const data = await res.json();
+                currentSessionId = sessionId;
+                localStorage.setItem('currentSessionId', sessionId);
+                
+                // Clear current chat
+                const container = document.getElementById('chat-container');
+                container.innerHTML = '';
+                chatHistory = [];
+                
+                // Load messages
+                if (data.messages && data.messages.length > 0) {
+                    // Hide welcome screen
+                    const welcome = document.getElementById('welcome-screen');
+                    if (welcome) welcome.remove();
+                    
+                    // Display messages
+                    data.messages.forEach(msg => {
+                        const msgId = Date.now() + Math.random();
+                        appendMessage(
+                            msg.role === 'user' ? 'user' : 'bot',
+                            msg.content,
+                            msgId
+                        );
+                        chatHistory.push({
+                            role: msg.role,
+                            parts: [msg.content],
+                            id: msgId
+                        });
+                    });
+                }
+                
+                // Highlight active session in sidebar
+                document.querySelectorAll('.sidebar-session').forEach(el => {
+                    el.classList.remove('bg-gray-800');
+                });
+                const activeEl = document.getElementById(`sess-${sessionId}`);
+                if (activeEl) {
+                    activeEl.classList.add('bg-gray-800');
+                }
+                
+            } catch (e) {
+                console.error('Failed to load session:', e);
+                localStorage.removeItem('currentSessionId');
+            }
+        }
+        
+        async function createSession(title) {
+            try {
+                const sessionId = Date.now().toString();
+                const res = await fetch('/sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId, title: title })
+                });
+                
+                if (!res.ok) {
+                    throw new Error('Failed to create session');
+                }
+                
+                currentSessionId = sessionId;
+                localStorage.setItem('currentSessionId', sessionId);
+                addToSidebar(title, sessionId, true);
+                
+                return sessionId;
+            } catch (e) {
+                console.error('Failed to create session:', e);
+                return null;
+            }
+        }
+
         // --- 1. CORE LOGIC ---
         
         async function sendMessage() {
@@ -175,10 +283,13 @@
 
             input.value = '';
             
-            // Session Logic (Sidebar)
+            // Session Logic - Create session if needed
             if (!currentSessionId) {
-                currentSessionId = Date.now();
-                addToSidebar(text, currentSessionId);
+                const title = text.length > 30 ? text.substring(0, 30) + '...' : text;
+                currentSessionId = await createSession(title);
+                if (!currentSessionId) {
+                    console.error('Failed to create session');
+                }
             }
 
             const turnId = Date.now();
@@ -188,20 +299,28 @@
             loading.classList.remove('hidden');
 
             try {
-                // API Call
+                // API Call with session_id
                 const apiHistory = chatHistory.map(h => ({ role: h.role, parts: h.parts }));
                 const res = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_input: text, history: apiHistory })
+                    body: JSON.stringify({ 
+                        user_input: text, 
+                        history: apiHistory,
+                        session_id: currentSessionId 
+                    })
                 });
                 const data = await res.json();
                 
                 loading.classList.add('hidden');
-                appendMessage('bot', data.response, turnId + 1);
-
-                chatHistory.push({ role: "user", parts: [text], id: turnId });
-                chatHistory.push({ role: "model", parts: [data.response], id: turnId + 1 });
+                
+                if (data.status === 'error') {
+                    appendMessage('bot', `⚠️ ${data.message}`, turnId + 1);
+                } else {
+                    appendMessage('bot', data.response, turnId + 1);
+                    chatHistory.push({ role: "user", parts: [text], id: turnId });
+                    chatHistory.push({ role: "model", parts: [data.response], id: turnId + 1 });
+                }
 
             } catch (e) {
                 loading.classList.add('hidden');
@@ -295,40 +414,97 @@
             sendMessage();
         }
 
-        function addToSidebar(text, id) {
+        function addToSidebar(text, id, prepend = true) {
             const list = document.getElementById('history-list');
+            
+            // Check if already exists
+            if (document.getElementById(`sess-${id}`)) {
+                return;
+            }
+            
             const div = document.createElement('div');
             div.id = `sess-${id}`;
             const title = text.length > 22 ? text.substring(0, 22) + '...' : text;
             
-            div.className = "group flex items-center justify-between p-3 rounded-lg hover:bg-gray-800 cursor-pointer text-sm text-gray-400 transition mb-1 sidebar-text whitespace-nowrap overflow-hidden";
+            div.className = "sidebar-session group flex items-center justify-between p-3 rounded-lg hover:bg-gray-800 cursor-pointer text-sm text-gray-400 transition mb-1 sidebar-text whitespace-nowrap overflow-hidden";
             div.innerHTML = `
-                <div class="flex items-center gap-2 overflow-hidden">
+                <div class="flex items-center gap-2 overflow-hidden" onclick="loadSession('${id}')">
                     <i class="far fa-message text-xs"></i>
                     <span class="truncate">${title}</span>
                 </div>
                 <button onclick="deleteSession('${id}', event)" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 px-2"><i class="fas fa-trash"></i></button>
             `;
-            list.prepend(div);
+            
+            if (prepend) {
+                list.prepend(div);
+            } else {
+                list.appendChild(div);
+            }
         }
 
-        function deleteSession(id, e) {
+        async function deleteSession(id, e) {
             e.stopPropagation();
-            document.getElementById(`sess-${id}`).remove();
-            if(id == currentSessionId) startNewSession();
+            
+            try {
+                const res = await fetch(`/sessions/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    document.getElementById(`sess-${id}`).remove();
+                    if (id == currentSessionId) {
+                        startNewSession();
+                    }
+                } else {
+                    console.error('Failed to delete session');
+                }
+            } catch (e) {
+                console.error('Error deleting session:', e);
+            }
         }
 
         function startNewSession() {
             currentSessionId = null;
             chatHistory = [];
+            localStorage.removeItem('currentSessionId');
+            
             const container = document.getElementById('chat-container');
             container.innerHTML = ''; // Clear chat
-            document.getElementById('welcome-screen').classList.remove('hidden');
-            container.appendChild(document.getElementById('welcome-screen'));
+            
+            // Recreate welcome screen
+            container.innerHTML = `
+                <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center text-gray-500 space-y-6 animate-fade-in">
+                    <div class="w-20 h-20 bg-gray-800 rounded-3xl flex items-center justify-center mb-2 shadow-2xl border border-gray-700">
+                        <i class="fas fa-robot text-4xl text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-2">Akkam jirtu!</h2>
+                        <p class="text-gray-400 max-w-md mx-auto">Ani gargaaraa keessani. Afaan Oromoo, Ingiliffaa, fi Herrega nan beeka.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-lg px-4">
+                        <button onclick="quickAsk('System Engineering maali?')" class="text-left bg-[#1f2937] hover:bg-[#374151] p-4 rounded-xl border border-gray-700 transition text-sm">
+                            <span class="block text-white font-medium mb-1">💡 System Engineering?</span>
+                            <span class="text-gray-400 text-xs">Ibsa gabaabaa kenni...</span>
+                        </button>
+                        <button onclick="quickAsk('Write Python code for a Calculator')" class="text-left bg-[#1f2937] hover:bg-[#374151] p-4 rounded-xl border border-gray-700 transition text-sm">
+                            <span class="block text-white font-medium mb-1">🐍 Python Code</span>
+                            <span class="text-gray-400 text-xs">Calculator salphaa barreessi...</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Remove active state from all sessions
+            document.querySelectorAll('.sidebar-session').forEach(el => {
+                el.classList.remove('bg-gray-800');
+            });
             
             // Close mobile sidebar if open
             if(window.innerWidth < 768) toggleSidebar();
         }
+        
+        // Initialize app on page load
+        window.addEventListener('DOMContentLoaded', initializeApp);
 
         function copyText(btn, id) {
             const text = document.getElementById(`raw-${id}`).value;

@@ -1,0 +1,310 @@
+{
+  "test_cases": [
+    {
+      "id": "greeting_01",
+      "category": "greetings",
+      "input": "Akkam jirta?",
+      "expected_type": "greeting_response",
+      "description": "Basic greeting - How are you?",
+      "validation": {
+        "min_length": 20,
+        "max_response_time": 3.0,
+        "min_oromo_ratio": 0.3,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "greeting_02",
+      "category": "greetings",
+      "input": "Nagaan jirtu?",
+      "expected_type": "greeting_response",
+      "description": "Formal greeting - Are you in peace?",
+      "validation": {
+        "min_length": 20,
+        "max_response_time": 3.0,
+        "min_oromo_ratio": 0.3,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "technical_01",
+      "category": "technical",
+      "input": "System Engineering maali?",
+      "expected_type": "technical_explanation",
+      "description": "What is System Engineering?",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "technical_02",
+      "category": "technical",
+      "input": "Kompitarri akkamitti hojjeta?",
+      "expected_type": "technical_explanation",
+      "description": "How does a computer work?",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "technical_03",
+      "category": "technical",
+      "input": "Write a Python function to calculate factorial",
+      "expected_type": "code_generation",
+      "description": "Code generation request in English",
+      "validation": {
+        "min_length": 50,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.0,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "cultural_01",
+      "category": "cultural",
+      "input": "Irreecha maal jedhama?",
+      "expected_type": "cultural_knowledge",
+      "description": "What is Irreecha?",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.3,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "cultural_02",
+      "category": "cultural",
+      "input": "Sirna Gadaa ibsi",
+      "expected_type": "cultural_knowledge",
+      "description": "Explain Gada system",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.3,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "cultural_03",
+      "category": "cultural",
+      "input": "Aadaa Oromoo ibsi",
+      "expected_type": "cultural_knowledge",
+      "description": "Explain Oromo culture",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.3,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "mixed_01",
+      "category": "mixed_language",
+      "input": "Can you explain quantum computing in Afaan Oromoo?",
+      "expected_type": "technical_explanation",
+      "description": "Mixed language - English question requesting Oromo response",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "mixed_02",
+      "category": "mixed_language",
+      "input": "Maaloo artificial intelligence ibsi",
+      "expected_type": "technical_explanation",
+      "description": "Mixed language - Oromo with English technical term",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "conversation_01",
+      "category": "conversation",
+      "input": "Maal hojjechaa jirta?",
+      "expected_type": "conversational_response",
+      "description": "What are you doing?",
+      "validation": {
+        "min_length": 30,
+        "max_response_time": 3.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "conversation_02",
+      "category": "conversation",
+      "input": "Na gargaartaa?",
+      "expected_type": "conversational_response",
+      "description": "Can you help me?",
+      "validation": {
+        "min_length": 30,
+        "max_response_time": 3.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "math_01",
+      "category": "mathematical",
+      "input": "2 + 2 maal ta'a?",
+      "expected_type": "mathematical_response",
+      "description": "Simple math question",
+      "validation": {
+        "min_length": 10,
+        "max_response_time": 3.0,
+        "min_oromo_ratio": 0.1,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "math_02",
+      "category": "mathematical",
+      "input": "Himoota Pythagoras ibsi",
+      "expected_type": "mathematical_response",
+      "description": "Explain Pythagorean theorem",
+      "validation": {
+        "min_length": 80,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "educational_01",
+      "category": "educational",
+      "input": "Barumsa waa'ee lafti akkamitti uumamte naaf ibsi",
+      "expected_type": "educational_explanation",
+      "description": "Explain how Earth was formed",
+      "validation": {
+        "min_length": 150,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "educational_02",
+      "category": "educational",
+      "input": "Photosynthesis maal jedhama?",
+      "expected_type": "educational_explanation",
+      "description": "What is photosynthesis?",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "edge_empty",
+      "category": "edge_cases",
+      "input": "",
+      "expected_type": "error_handling",
+      "description": "Empty input",
+      "validation": {
+        "min_length": 10,
+        "max_response_time": 1.0,
+        "min_oromo_ratio": 0.0,
+        "must_not_error": false
+      }
+    },
+    {
+      "id": "edge_whitespace",
+      "category": "edge_cases",
+      "input": "   ",
+      "expected_type": "error_handling",
+      "description": "Only whitespace",
+      "validation": {
+        "min_length": 10,
+        "max_response_time": 1.0,
+        "min_oromo_ratio": 0.0,
+        "must_not_error": false
+      }
+    },
+    {
+      "id": "edge_long",
+      "category": "edge_cases",
+      "input": "Maaloo naaf ibsi waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa waa'ee barnoota kompitaraa",
+      "expected_type": "long_input_handling",
+      "description": "Very long input text",
+      "validation": {
+        "min_length": 50,
+        "max_response_time": 8.0,
+        "min_oromo_ratio": 0.1,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "history_01",
+      "category": "historical",
+      "input": "Seenaa Oromoo gabaabsii naaf himi",
+      "expected_type": "historical_explanation",
+      "description": "Briefly tell Oromo history",
+      "validation": {
+        "min_length": 150,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.3,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "practical_01",
+      "category": "practical",
+      "input": "Akkamittin nyaata gaarii qopheessuu danda'a?",
+      "expected_type": "practical_advice",
+      "description": "How can I prepare good food?",
+      "validation": {
+        "min_length": 100,
+        "max_response_time": 5.0,
+        "min_oromo_ratio": 0.2,
+        "must_not_error": true
+      }
+    },
+    {
+      "id": "translation_01",
+      "category": "translation",
+      "input": "Jechootaa kana gara Afaan Oromoo hiiki: 'Good morning, how can I help you today?'",
+      "expected_type": "translation_response",
+      "description": "Translation from English to Oromo",
+      "validation": {
+        "min_length": 30,
+        "max_response_time": 3.0,
+        "min_oromo_ratio": 0.4,
+        "must_not_error": true
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-01-20",
+    "description": "Comprehensive test suite for Afaan Oromo Conversational AI System",
+    "total_cases": 22,
+    "categories": [
+      "greetings",
+      "technical",
+      "cultural",
+      "mixed_language",
+      "conversation",
+      "mathematical",
+      "educational",
+      "edge_cases",
+      "historical",
+      "practical",
+      "translation"
+    ]
+  }
+}
+

@@ -712,4 +712,14 @@ If you find this project useful, please consider giving it a star on GitHub!
 **Made with ❤️ for the Oromo community**
 
 *Galata! Thank you for using the Afaan Oromoo Conversational AI System.*
+<img width="1280" height="692" alt="image" src="https://github.com/user-attachments/assets/2334ee0c-5f38-4c83-9081-5f3fb79118a8" />
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/c53eeb22-b4cf-4689-955a-ecf05b631903" />
+<img width="1280" height="610" alt="image" src="https://github.com/user-attachments/assets/33b11966-7ae4-4609-bbb2-5f6b1e1600bc" />
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/78c17280-f17c-44ee-93c6-f06aa8869187" />
+<img width="1280" height="675" alt="image" src="https://github.com/user-attachments/assets/547b5a42-3d35-41d3-96b6-cb5e1c25332a" />
+<img width="1280" height="671" alt="image" src="https://github.com/user-attachments/assets/5b3641f4-788a-43fe-a857-fa449348c6e7" />
+
+
+
+
 

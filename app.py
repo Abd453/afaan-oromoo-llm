@@ -1,6 +1,10 @@
-from fastapi import FastAPI, HTTPException
+import warnings
+# Silence Google warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from llm_client import query_llm
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from database import get_database
@@ -12,202 +16,146 @@ import os
 import time
 from typing import Optional, List
 
-# Initialize rate limiter
+# ---------------- CONFIGURATION ----------------
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(title="Afaan Oromoo AI API")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Initialize database
+# Initialize Database
 db = get_database(os.getenv("DATABASE_PATH", "conversations.db"))
 
-# --- CORS ---
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"], 
     allow_credentials=True,
-    allow_methods=["GET", "POST", "DELETE"],
-    allow_headers=["Content-Type"],
+    allow_methods=["*"], 
+    allow_headers=["*"],
 )
 
-# --- DATA MODELS ---
+# ---------------- DATA MODELS ----------------
 class ChatRequest(BaseModel):
     user_input: str
-    history: list = []
+    history: List[str] = []
     session_id: Optional[str] = None
-    
-    @validator('user_input')
+
+    @field_validator("user_input")
+    @classmethod
     def validate_input(cls, v):
         if not v or not v.strip():
             raise ValueError("Input cannot be empty")
-        if len(v) > 2000:
-            raise ValueError("Input too long (max 2000 characters)")
         return v.strip()
 
 class SessionCreate(BaseModel):
     session_id: str
     title: str
 
-class SessionUpdate(BaseModel):
-    title: str
-
-# --- CHAT ENDPOINT ---
+# ---------------- CHAT ENDPOINT (FIXED LANGUAGE) ----------------
 @app.post("/chat")
 @limiter.limit(os.getenv("RATE_LIMIT_PER_MINUTE", "30/minute"))
-async def chat_endpoint(request: ChatRequest):
-    """
-    Main chat endpoint with database persistence and analytics.
-    """
+async def chat_endpoint(request: Request, payload: ChatRequest):
     try:
         start_time = time.time()
-        
+
+        # 1. FORCE AFAAN OROMOO
+        # We inject a system command into the prompt here.
+        # This ensures it speaks Afaan Oromoo even if you ask in English.
+        forced_prompt = (
+            "INSTRUCTION: You are a helpful AI assistant. "
+            "You MUST answer ONLY in Afaan Oromoo. "
+            "If the user inputs English, TRANSLATE your answer to Afaan Oromoo. "
+            "Never reply in English.\n\n"
+            f"User Question: {payload.user_input}"
+        )
+
         # Query LLM
-        response_text = query_llm(request.user_input, request.history)
-        
+        response_text = query_llm(forced_prompt, payload.history)
         elapsed_time = time.time() - start_time
-        
-        # Save to database if session_id provided
-        if request.session_id:
+
+        # Save to Database
+        if payload.session_id:
             try:
-                # Save user message
-                db.add_message(
-                    session_id=request.session_id,
-                    role="user",
-                    content=request.user_input,
-                    token_count=len(request.user_input.split())
-                )
-                
-                # Save assistant response
-                db.add_message(
-                    session_id=request.session_id,
-                    role="model",
-                    content=response_text,
-                    token_count=len(response_text.split())
-                )
-                
-                # Log analytics
-                db.log_analytics(
-                    session_id=request.session_id,
-                    response_time=elapsed_time,
-                    input_length=len(request.user_input),
-                    output_length=len(response_text)
-                )
-            except Exception as db_error:
-                # Don't fail the request if database fails
-                print(f"Database error: {db_error}")
-        
+                db.add_message(payload.session_id, "user", payload.user_input)
+                db.add_message(payload.session_id, "model", response_text)
+                db.log_analytics(payload.session_id, response_time=elapsed_time, input_length=len(payload.user_input), output_length=len(response_text))
+            except Exception as e:
+                print(f"⚠️ DB Error: {e}")
+
         return {
             "status": "success",
             "response": response_text,
             "response_time": round(elapsed_time, 3)
         }
-    
-    except ValueError as e:
-        db.log_analytics(error=str(e), input_length=len(request.user_input))
-        raise HTTPException(status_code=400, detail=str(e))
-    
-    except Exception as e:
-        db.log_analytics(error=str(e), input_length=len(request.user_input))
-        return JSONResponse(
-            status_code=500,
-            content={
-                "status": "error",
-                "message": "Rakkoo teeknikaa uumame. Maaloo irra deebi'ii yaalaa.",
-                "error": str(e)
-            }
-        )
 
-# --- SESSION MANAGEMENT ENDPOINTS ---
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+# ---------------- SESSION ENDPOINTS (FIXED IDs) ----------------
 @app.post("/sessions")
 async def create_session(session: SessionCreate):
-    """Create a new conversation session."""
     try:
-        result = db.create_session(session.session_id, session.title)
-        return {"status": "success", "session": result}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        res = db.create_session(session.session_id, session.title)
+        # FIX: Ensure we return 'session_id' correctly
+        return {
+            "status": "success", 
+            "session": {
+                "session_id": res.get('id', session.session_id), 
+                "title": res['title']
+            }
+        }
+    except Exception as e: raise HTTPException(500, str(e))
 
 @app.get("/sessions")
 async def list_sessions(limit: int = 50, offset: int = 0):
-    """List all conversation sessions."""
     try:
-        sessions = db.list_sessions(limit=limit, offset=offset)
-        return {
-            "status": "success",
-            "sessions": sessions,
-            "total": db.get_total_sessions()
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raw_sessions = db.list_sessions(limit=limit, offset=offset)
+        
+        # CRITICAL FIX: Map 'id' (from DB) to 'session_id' (for Frontend)
+        # This fixes the "Disappearing History" issue.
+        formatted = []
+        for s in raw_sessions:
+            # Check for 'id' OR 'session_id' to be safe
+            s_id = s.get("id") or s.get("session_id")
+            if s_id:
+                formatted.append({
+                    "session_id": s_id, 
+                    "title": s["title"], 
+                    "created_at": s.get("created_at", "")
+                })
+                
+        return {"status": "success", "sessions": formatted, "total": db.get_total_sessions()}
+    except Exception as e: raise HTTPException(500, str(e))
 
 @app.get("/sessions/{session_id}")
 async def get_session(session_id: str):
-    """Get a specific session with its messages."""
     try:
         session = db.get_session(session_id)
-        if not session:
-            raise HTTPException(status_code=404, detail="Session not found")
+        if not session: raise HTTPException(404, "Session not found")
         
-        messages = db.get_messages(session_id)
-        
-        return {
-            "status": "success",
-            "session": session,
-            "messages": messages
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raw_msgs = db.get_messages(session_id)
+        # Format messages for UI
+        formatted_msgs = [{"role": "bot" if m["role"] == "model" else "user", "parts": [m["content"]]} for m in raw_msgs]
 
-@app.put("/sessions/{session_id}")
-async def update_session(session_id: str, update: SessionUpdate):
-    """Update session title."""
-    try:
-        db.update_session(session_id, title=update.title)
-        return {"status": "success"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"status": "success", "session": session, "messages": formatted_msgs}
+    except Exception as e: raise HTTPException(500, str(e))
 
 @app.delete("/sessions/{session_id}")
 async def delete_session(session_id: str):
-    """Delete a session and all its messages."""
     try:
+        # Validate ID isn't 'undefined'
+        if session_id == "undefined" or not session_id: 
+            raise HTTPException(400, "Invalid Session ID")
+            
         deleted = db.delete_session(session_id)
-        if not deleted:
-            raise HTTPException(status_code=404, detail="Session not found")
+        if not deleted: raise HTTPException(404, "Session not found")
         return {"status": "success"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e: raise HTTPException(500, str(e))
 
-# --- ANALYTICS ENDPOINT ---
-@app.get("/analytics")
-async def get_analytics(start_date: Optional[str] = None, end_date: Optional[str] = None):
-    """Get usage analytics."""
-    try:
-        summary = db.get_analytics_summary(start_date, end_date)
-        errors = db.get_error_logs(limit=20)
-        
-        return {
-            "status": "success",
-            "summary": summary,
-            "recent_errors": errors,
-            "total_sessions": db.get_total_sessions(),
-            "total_messages": db.get_total_messages()
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+# ---------------- HOME ----------------
 @app.get("/", response_class=HTMLResponse)
 async def home():
-    # Helper to find index.html even if run from different folder
-    file_path = os.path.join(os.path.dirname(__file__), "index.html")
-    if os.path.exists(file_path):
-        return FileResponse(file_path)
+    if os.path.exists("index.html"): return FileResponse("index.html")
     return "<h1>Error: index.html not found</h1>"
 
 if __name__ == "__main__":
